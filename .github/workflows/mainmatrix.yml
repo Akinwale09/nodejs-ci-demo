@@ -1,0 +1,52 @@
+name: Matrix CI Build and Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test-matrix:
+    name: Build & Test on Node ${{ matrix.node }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    # -------------------------
+    # MATRIX STRATEGY
+    # -------------------------
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [14, 16, 18, 20]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        # 4 Node versions × 3 OS = 12 parallel jobs
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # -------------------------
+      # Setup Node version (per matrix)
+      # -------------------------
+      - name: Use Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+
+      # -------------------------
+      # Install dependencies
+      # -------------------------
+      - name: Install dependencies
+        run: |
+          npm install
+
+      # -------------------------
+      # Build project
+      # -------------------------
+      - name: Build
+        run: npm run build
+
+      # -------------------------
+      # Run tests
+      # -------------------------
+      - name: Run tests
+        run: npm test
